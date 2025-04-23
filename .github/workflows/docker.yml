@@ -23,6 +23,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}  # Docker Hub 用户名
           password: ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub 密码
 
+      - name: Clone ARM-software/Tool-Solutions repository
+        run: |
+          git clone https://github.com/ARM-software/Tool-Solutions.git
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:

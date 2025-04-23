@@ -11,8 +11,17 @@ jobs:
     runs-on: ubuntu-22.04-arm  # 使用 ARM 架构的 Ubuntu 22.04 镜像
 
     steps:
-      - name: Checkout repository
+      - name: Checkout current repository
         uses: actions/checkout@v3  # 克隆当前仓库
+
+      - name: Clone ARM-software/Tool-Solutions repository
+        run: |
+          git clone https://github.com/ARM-software/Tool-Solutions.git
+
+      - name: Run build.sh script
+        run: |
+          cd Tool-Solutions/ML-Frameworks/pytorch-aarch64
+          ./build.sh
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2  # 设置 Docker Buildx
@@ -23,14 +32,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}  # Docker Hub 用户名
           password: ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub 密码
 
-      - name: Clone ARM-software/Tool-Solutions repository
+      - name: Tag Docker image
         run: |
-          git clone https://github.com/ARM-software/Tool-Solutions.git
+          docker tag toolsolutions-pytorch:latest ${{ secrets.DOCKER_USERNAME }}/pytorch:arm
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./Tool-Solutions/ML-Frameworks/pytorch-aarch64  # Docker 构建上下文路径
-          file: ./Tool-Solutions/ML-Frameworks/pytorch-aarch64/Dockerfile  # Dockerfile 路径
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/pytorch:arm  # 目标镜像标签
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/pytorch:arm
